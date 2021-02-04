@@ -20,7 +20,7 @@ server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
 # checks whether sufficient arguments have been provided
 if len(sys.argv) != 3:
-    print ("Correct usage: script, IP address, port number")
+    print("Correct usage: script, IP address, port number")
     exit()
 
 # takes the first argument from command prompt as IP address
@@ -44,39 +44,43 @@ server.listen(100)
 
 list_of_clients = []
 
+
 def clientthread(conn, addr):
 
     # sends a message to the client whose user object is conn
     conn.send(bytes("Welcome to this chatroom!", "utf-8"))
 
     while True:
-            try:
-                message = str(conn.recv(2048), "utf-8")
-                if message:
+        try:
+            message = str(conn.recv(2048), "utf-8")
+            if message:
 
-                    """prints the message and address of the
-                    user who just sent the message on the server
-                    terminal"""
-                    message_to_send = f"<{addr[0]}:{addr[1]}> {message}"
-                    print (message_to_send)
+                """prints the message and address of the
+                user who just sent the message on the server
+                terminal"""
+                message_to_send = f"<{addr[0]}:{addr[1]}> {message}"
+                print(message_to_send)
 
-                    # Calls broadcast function to send message to all
-                    broadcast(message_to_send, conn)
+                # Calls broadcast function to send message to all
+                broadcast(message_to_send, conn)
 
-                else:
-                    """message may have no content if the connection
-                    is broken, in this case we remove the connection"""
-                    remove(conn)
+            else:
+                """message may have no content if the connection
+                is broken, in this case we remove the connection"""
+                remove(conn)
 
-            except:
-                continue
+        except:
+            continue
+
 
 """Using the below function, we broadcast the message to all
 clients who's object is not the same as the one sending
 the message """
+
+
 def broadcast(message, connection):
     for clients in list_of_clients:
-        if clients!=connection:
+        if clients != connection:
             try:
                 clients.send(bytes(message, "utf-8"))
             except:
@@ -85,12 +89,16 @@ def broadcast(message, connection):
                 # if the link is broken, we remove the client
                 remove(clients)
 
+
 """The following function simply removes the object
 from the list that was created at the beginning of
 the program"""
+
+
 def remove(connection):
     if connection in list_of_clients:
         list_of_clients.remove(connection)
+
 
 while True:
 
@@ -105,11 +113,11 @@ while True:
     list_of_clients.append(conn)
 
     # prints the address of the user that just connected
-    print (addr[0] + " connected")
+    print(addr[0] + " connected")
 
     # creates and individual thread for every user
     # that connects
-    thread = Thread(target=clientthread, args=(conn,addr))
+    thread = Thread(target=clientthread, args=(conn, addr))
     thread.start()
 
 conn.close()
