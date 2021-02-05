@@ -1,16 +1,29 @@
 #!/usr/bin/env python3
 import selectors
 import socket
+# import this explicitly so we can use its .subclasses
 from commands.base_command import BaseCommand
+# Maybe import * is not the best way
+# TODO(Stoycho) review import *
 from commands import *
 
-motd = ['Welcome to ViaChat!', 'available commands:']
+ENC = 'utf-8'  # encoding
 
-cmds = []
+COMMAND_PREFIX = '/'
+DEFAULT_CMD = f'{COMMAND_PREFIX}post'
+
+motd = 'Welcome to ViaChat!'
+available_commands = ['available commands:']
+
+# get all available commands so we can use them when we get message.
+cmds = {}
 for cls in BaseCommand.subclasses:
-    cmd = cls()
-    motd.append(f'{cmd.COMMAND_PREFIX}{cmd.action} - {cmd.describe}')
-    cmds.append(cmd)
+    cmd = cls()  # create an instance of the command and add it to the dictionary
+    whole_command = f'{COMMAND_PREFIX}{cmd.action}'
+    available_commands.append(f'{whole_command} - {cmd.describe}')
+    cmds[whole_command] = cmd
+
+available_commands = "\n".join(available_commands)
 
 
 def accept(sock, mask):
@@ -18,26 +31,53 @@ def accept(sock, mask):
     print('accepted', conn, 'from', addr)
     conn.setblocking(False)
     sel.register(conn, selectors.EVENT_READ, read)
-    conn.send(bytes("\n".join(motd), "utf-8"))
+    send(conn, f'{motd}\n{available_commands}\n')
 
 
 def read(conn, mask):
-    data = conn.recv(1024)  # Should be ready
+    data = recv(conn)  # Should be ready
     if data:
-        print('echoing', repr(data), 'to', conn)
-        conn.send(data)  # Hope it won't block
+        cmd = get_command(data)
+        if cmd is None:
+            send(conn, available_commands)
+        else:
+            print('found cmd', cmd.action)
+            error = cmd.check(data)
+            if error != '':
+                send(conn, error)
+            else:
+                send(conn, data)
     else:
         print('closing', conn)
         sel.unregister(conn)
         conn.close()
 
 
+def recv(conn):
+    return str(conn.recv(1024), ENC).rstrip()
+
+
+def send(conn, data):
+    conn.send(bytes(data, ENC))
+
+
+def get_command(data: str):
+    # check if the first char is COMMAND_PREFIX, otherwise DEFAULT_CMD
+    if not data[0] == COMMAND_PREFIX:
+        return cmds[DEFAULT_CMD]
+    cmd = data.split(' ')[0]
+    return cmds.get(cmd, None)
+
+
 sel = selectors.DefaultSelector()
 sock = socket.socket()
-sock.bind(('localhost', 12345))
+sock.bind(('localhost', 1234))
 sock.listen()
 sock.setblocking(False)
 sel.register(sock, selectors.EVENT_READ, accept)
+
+print('Started')
+print(motd, available_commands)
 
 while True:
     events = sel.select()

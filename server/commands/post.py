@@ -3,8 +3,6 @@ from .base_command import BaseCommand
 
 class Post(BaseCommand):
 
-    params = ['room']
-
     @property
     def action(self):
         return 'post'
@@ -13,5 +11,15 @@ class Post(BaseCommand):
     def describe(self):
         return 'Posts message to specific room'
 
+    def check(self, data: str):
+        """
+        check if we have any message
+        """
+
+        if len(data.split(' ')) < 2:
+            return 'Message is required'
+
+        return ''  # no errors
+
     def execute():
-        pass
+        return 'To execute post'

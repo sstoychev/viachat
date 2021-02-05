@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from typing import ClassVar
 
 # https://youtu.be/cKPlPJyQrt4?t=1780
 
@@ -11,10 +12,6 @@ class BaseCommand(ABC):
     def __init_subclass__(cls, *a, **kwargs):
         super().__init_subclass__(*a, **kwargs)
         cls.subclasses.append(cls)
-
-    COMMAND_PREFIX = '/'
-
-    params = []
 
     @property
     @abstractmethod
@@ -33,11 +30,12 @@ class BaseCommand(ABC):
         """
         pass
 
-    def check(self, data):
+    @abstractmethod
+    def check(self, data: str) -> str:
         """
         checks if the data should be executed with this command
         """
-        return data.startswith(f'{self.COMMAND_PREFIX}{self.action} ')
+        pass
 
     @abstractmethod
     def execute(self, client):

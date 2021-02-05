@@ -1,6 +1,8 @@
+# Target
+
 1. Command resolution
-    - which Command was passed, default Command
-    - Command parameters verification
+    - which Command was passed, default Command - Done
+    - Command parameters verification - Done
 
 1. User connect
     - before executing any commands the user should set username
@@ -24,3 +26,9 @@
 1. Start server parameters handling
     - argparse
     - config file
+
+# Optional
+
+1. Executables
+
+2. Web client
