@@ -4,6 +4,13 @@ from .basecommand import BaseCommand
 class Room(BaseCommand):
 
     @property
+    def errors(self):
+        return {
+            'incorrect_name': 'You should supply correct name',
+            'spaces_not_allowed': 'The name cannot contain spacess'
+        }
+
+    @property
     def action(self):
         return 'room'
 
@@ -19,10 +26,10 @@ class Room(BaseCommand):
 
         params = data.split(' ')
         if len(params) == 1:
-            return 'You should supply correct name'
+            return self.errors['incorrect_name']
 
         if len(params) > 2:
-            return 'The name cannot contain spacess'
+            return self.errors['spaces_not_allowed']
 
         name = params[1]
 

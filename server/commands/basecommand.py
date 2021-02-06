@@ -14,6 +14,14 @@ class BaseCommand(ABC):
 
     @property
     @abstractmethod
+    def errors(self):
+        """
+        Dictionary with possible errors
+        """
+        pass
+
+    @property
+    @abstractmethod
     def action(self):
         """
         The action term. Example:

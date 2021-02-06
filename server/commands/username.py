@@ -4,6 +4,14 @@ from .basecommand import BaseCommand
 class UserName(BaseCommand):
 
     @property
+    def errors(self):
+        return {
+            'specify_username': 'Please, set you username first',
+            'incorrect_name': 'You should supply correct name',
+            'spaces_not_allowed': 'The name cannot contain spacess'
+        }
+
+    @property
     def action(self):
         return 'username'
 
@@ -19,10 +27,10 @@ class UserName(BaseCommand):
 
         params = data.split(' ')
         if len(params) == 1:
-            return 'You should supply correct name'
+            return self.errors['incorrect_name']
 
         if len(params) > 2:
-            return 'The name cannot contain spacess'
+            return self.errors['spaces_not_allowed']
 
         name = params[1]
         # TODO(Stoycho)

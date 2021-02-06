@@ -33,13 +33,20 @@ class Server(object):
         data = self.recv(conn)  # Should be ready
 
         if data:
+            # check if we have username
             if self.addr_users[conn.getpeername()] == '' and not data.startswith(self.USERNAME_CMD):
-                self.send(conn, self.available_commands)
+                error = self.cmds[self.USERNAME_CMD].errors['specify_username']
+                self.send(conn, error)
                 return
+
+            # check if the data starts with /
+            # and if so if it is in the available commands
             cmd = self.get_command(data)
+
             if cmd is None:
                 self.send(conn, self.available_commands)
             else:
+                # validate command's parameters
                 print('found cmd', cmd.action)
                 error = cmd.check(data)
                 if error != '':

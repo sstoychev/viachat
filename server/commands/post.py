@@ -4,6 +4,12 @@ from .basecommand import BaseCommand
 class Post(BaseCommand):
 
     @property
+    def errors(self):
+        return {
+            'message_required': 'Message is required'
+        }
+
+    @property
     def action(self):
         return 'post'
 
@@ -17,7 +23,7 @@ class Post(BaseCommand):
         """
 
         if len(data.split(' ')) < 2:
-            return 'Message is required'
+            return self.errors['message_required']
 
         return ''  # no errors
 
