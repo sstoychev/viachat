@@ -13,13 +13,12 @@ class MySQLx(Db):
     will be handled automatically
     """
 
-    def __init__(self) -> None:
-        super().__init__()
+    def connect(self):
         conn = pymysql.connect(
-            host='localhost',
-            user='via',
-            password='V1a|Chat',
-            database='via',
+            host=self.config.get('mysq', 'host'),
+            user=self.config.get('mysq', 'user'),
+            password=self.config.get('mysq', 'password'),
+            database=self.config.get('mysq', 'database'),
             autocommit=True)
         cur = conn.cursor()
         cur.execute('''

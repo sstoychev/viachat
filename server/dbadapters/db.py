@@ -1,3 +1,4 @@
+from configparser import ConfigParser
 from abc import ABC, abstractmethod
 """
 Abstract class to define the methods for the adapters
@@ -7,6 +8,20 @@ this logic is used for the dynamic import
 
 
 class Db(ABC):
+    def __init__(self, config: ConfigParser) -> None:
+        self.config = config
+        super().__init__()
+        self.conn = None
+        self.cur = None
+        self.connect()
+
+    @abstractmethod
+    def connect(self):
+        """
+        Initialize the connection and setup the tables
+        """
+        pass
+
 
     @abstractmethod
     def select(self, table: str, conditions: dict) -> list:

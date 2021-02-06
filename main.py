@@ -21,7 +21,7 @@ db_engine = config.get('server', 'db_engine')
 DbEngine = getattr(importlib.import_module(
     f'server.dbadapters.{db_engine.lower()}'), db_engine)
 
-db = DbEngine()
+db = DbEngine(config)
 
 available_commands = ['Available commands:']
 

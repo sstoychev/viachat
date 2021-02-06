@@ -13,9 +13,9 @@ class Sqlite3x(Db):
     will be handled automatically
     """
 
-    def __init__(self) -> None:
-        super().__init__()
-        conn = sqlite3.connect("file::memory:")
+    def connect(self) -> None:
+        conn = sqlite3.connect(self.config.get('sqlite3', 'file'))
+
         conn.execute("PRAGMA foreign_keys = 1")
         cur = conn.cursor()
         cur.executescript('''
