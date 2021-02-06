@@ -24,8 +24,8 @@
     - store rooms messages in the database
 
 1. Start server parameters handling
-    - argparse
-    - config file
+    - argparse - Done
+    - config file - Done
 
 # Optional
 

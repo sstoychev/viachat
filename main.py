@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import sys
 import importlib
 from configparser import ConfigParser
 from server.server import Server
@@ -21,7 +22,7 @@ DbEngine = getattr(importlib.import_module(
 
 db = DbEngine()
 
-available_commands = ['Please, set you username first', 'Available commands:']
+available_commands = ['Available commands:']
 
 # Get all available commands dynamically so when we add a new one not to modify
 # message handling.
@@ -40,5 +41,7 @@ chat_server = Server(
     cmds=cmds,
     available_commands=available_commands
 )
-
-chat_server.run()
+try:
+    chat_server.run()
+except KeyboardInterrupt:
+    sys.exit(0)
