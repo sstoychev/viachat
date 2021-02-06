@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from typing import ClassVar
 
 # https://youtu.be/cKPlPJyQrt4?t=1780
 

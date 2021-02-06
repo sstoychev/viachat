@@ -5,7 +5,7 @@
     - Command parameters verification - Done
 
 1. User connect
-    - before executing any commands the user should set username
+    - before executing any commands the user should set username - Done
 
 1.  Create/Join rooms
     - create room - check if the name is available
@@ -20,7 +20,7 @@
     - if used command /post _room_ - send to the specified room
 
 1. Store information in database
-    - adapter classes for the different DBs - the should have the same set of default methods so they can be changed without changing anything in the code
+    - adapter classes for the different DBs - the should have the same set of default methods so they can be changed without changing anything in the code - Done
     - store rooms messages in the database
 
 1. Start server parameters handling

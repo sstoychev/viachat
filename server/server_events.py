@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import selectors
 import socket
+from db_adapters.sqlite3x import Sqlite3x
 # import this explicitly so we can use its .subclasses
 from commands.base_command import BaseCommand
 # Maybe import * is not the best way
@@ -11,19 +12,7 @@ ENC = 'utf-8'  # encoding
 
 COMMAND_PREFIX = '/'
 DEFAULT_CMD = f'{COMMAND_PREFIX}post'
-
-motd = 'Welcome to ViaChat!'
-available_commands = ['available commands:']
-
-# get all available commands so we can use them when we get message.
-cmds = {}
-for cls in BaseCommand.subclasses:
-    cmd = cls()  # create an instance of the command and add it to the dictionary
-    whole_command = f'{COMMAND_PREFIX}{cmd.action}'
-    available_commands.append(f'{whole_command} - {cmd.describe}')
-    cmds[whole_command] = cmd
-
-available_commands = "\n".join(available_commands)
+USERNAME_CMD = f'{COMMAND_PREFIX}username'
 
 
 def accept(sock, mask):
@@ -31,11 +20,17 @@ def accept(sock, mask):
     print('accepted', conn, 'from', addr)
     conn.setblocking(False)
     sel.register(conn, selectors.EVENT_READ, read)
+    addr_users[addr] = {'conn': conn, 'username': ''}
     send(conn, f'{motd}\n{available_commands}\n')
 
 
 def read(conn, mask):
     data = recv(conn)  # Should be ready
+
+    if addr_users[conn.getpeername()]['username'] == '' and not data.startswith(USERNAME_CMD):
+        send(conn, available_commands)
+        return
+
     if data:
         cmd = get_command(data)
         if cmd is None:
@@ -68,6 +63,24 @@ def get_command(data: str):
     cmd = data.split(' ')[0]
     return cmds.get(cmd, None)
 
+
+motd = 'Welcome to ViaChat!'
+available_commands = ['Please, set you username first', 'Available commands:']
+
+db = Sqlite3x()
+
+# get all available commands so we can use them when we get message.
+cmds = {}
+for cls in BaseCommand.subclasses:
+    cmd = cls()  # create an instance of the command and add it to the dictionary
+    whole_command = f'{COMMAND_PREFIX}{cmd.action}'
+    available_commands.append(f'{whole_command} - {cmd.describe}')
+    cmds[whole_command] = cmd
+
+available_commands.append('')
+available_commands = "\n".join(available_commands)
+
+addr_users = {}
 
 sel = selectors.DefaultSelector()
 sock = socket.socket()
