@@ -1,3 +1,4 @@
+import sys
 import selectors
 import socket
 
@@ -63,12 +64,23 @@ class Server(object):
         cmd = data.split(' ')[0]
         return self.cmds.get(cmd, None)
 
+    def handle_stdin(self, _conn, _data):
+        message = sys.stdin.readline().rstrip()
+        # TODO(Stoycho) - implement more commands
+        # - number of users
+        # - number of rooms
+        # - info about user
+        # - etc
+        if message == 'quit':
+            sys.exit()
+
     def run(self):
         with socket.socket() as sock:
             sock.bind((self.ADDRESS, self.PORT))
             sock.listen()
             sock.setblocking(False)
             self.sel.register(sock, selectors.EVENT_READ, self.accept)
+            self.sel.register(sys.stdin, selectors.EVENT_READ, self.handle_stdin)
 
             print('Started')
             print(self.MOTD, self.available_commands)

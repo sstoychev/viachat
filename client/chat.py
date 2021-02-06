@@ -3,6 +3,7 @@
 import socket
 import select
 import sys
+import os
 
 
 def handle_event(server, read_sockets):
@@ -16,15 +17,12 @@ def handle_event(server, read_sockets):
         else:
             message = sys.stdin.readline()
             server.send(bytes(message, "utf-8"))
-            sys.stdout.write("<You>")
-            sys.stdout.write(message)
-            sys.stdout.flush()
     return True
 
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 if len(sys.argv) != 3:
-    print("Correct usage: script, IP address, port number")
+    print(f'Correct usage:\n{os.path.basename(__file__)} <ip> <port>')
     exit()
 IP_address = str(sys.argv[1])
 Port = int(sys.argv[2])
