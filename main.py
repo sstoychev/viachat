@@ -1,21 +1,27 @@
 #!/usr/bin/env python3
+import importlib
 from configparser import ConfigParser
 from server.server import Server
-from server.dbadapters.sqlite3x import Sqlite3x
 # import this explicitly so we can use its .subclasses
 from server.commands.basecommand import BaseCommand
 # Maybe import * is not the best way
 # TODO(Stoycho) review import *
 from server.commands import *
 
+
 CONFIG_FILE = 'config.ini'
 
 config = ConfigParser()
 config.read(CONFIG_FILE)
 
-available_commands = ['Please, set you username first', 'Available commands:']
+# import db_engine dynamically to be controlled only from the config
+db_engine = config.get('server', 'db_engine')
+DbEngine = getattr(importlib.import_module(
+    f'server.dbadapters.{db_engine.lower()}'), db_engine)
 
-db = Sqlite3x()
+db = DbEngine()
+
+available_commands = ['Please, set you username first', 'Available commands:']
 
 # Get all available commands dynamically so when we add a new one not to modify
 # message handling.

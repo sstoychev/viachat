@@ -1,4 +1,9 @@
 from abc import ABC, abstractmethod
+"""
+Abstract class to define the methods for the adapters
+the adapters should be in files named exacly as the classes, because
+this logic is used for the dynamic import
+"""
 
 
 class Db(ABC):
