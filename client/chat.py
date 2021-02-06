@@ -4,6 +4,24 @@ import socket
 import select
 import sys
 
+
+def handle_event(server, read_sockets):
+    for socks in read_sockets:
+        if socks == server:
+            message = str(socks.recv(2048), "utf-8")
+            if not message:
+                print('Connection to server lost')
+                return False
+            print(message)
+        else:
+            message = sys.stdin.readline()
+            server.send(bytes(message, "utf-8"))
+            sys.stdout.write("<You>")
+            sys.stdout.write(message)
+            sys.stdout.flush()
+    return True
+
+
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 if len(sys.argv) != 3:
     print("Correct usage: script, IP address, port number")
@@ -27,15 +45,7 @@ while True:
     condition will evaluate as true"""
     read_sockets, write_socket, error_socket = select.select(
         sockets_list, [], [])
+    if not handle_event(server, read_sockets):
+        break
 
-    for socks in read_sockets:
-        if socks == server:
-            message = str(socks.recv(2048), "utf-8")
-            print(message)
-        else:
-            message = sys.stdin.readline()
-            server.send(bytes(message, "utf-8"))
-            sys.stdout.write("<You>")
-            sys.stdout.write(message)
-            sys.stdout.flush()
 server.close()
