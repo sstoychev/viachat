@@ -33,15 +33,20 @@ class MySQLx(Db):
             CREATE TABLE IF NOT EXISTS rooms (
                 `id` int NOT NULL AUTO_INCREMENT PRIMARY KEY,
                 `name` varchar(32) NOT NULL,
-                UNIQUE KEY (`name`)
+                `created_by` varchar(32) NOT NULL,
+                UNIQUE KEY (`name`),
+                FOREIGN KEY (created_by)
+                REFERENCES users (username)
+                    ON DELETE CASCADE
+                    ON UPDATE NO ACTION,
             );
         ''')
         # We don't have select with JOIN that's why we will not use the ids
         cur.execute('''
             CREATE TABLE IF NOT EXISTS rooms_users (
             id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
-            username varchar(32),
             room varchar(32),
+            username varchar(32),
             UNIQUE KEY (username, room),
             FOREIGN KEY (username)
                 REFERENCES users (username)

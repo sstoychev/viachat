@@ -12,32 +12,30 @@ class CreateRoom(BaseCommand):
 
     @property
     def action(self):
-        return 'createoom'
+        return 'createroom'
 
     @property
     def describe(self):
         return 'Creates a room'
 
-    def check(self, data: str):
+    def check(self, params: str):
         """
         check if we have second parameter and only second
         check if the room name is available
         """
 
-        params = data.split(' ')
-        if len(params) == 1:
+        if not params:
             return self.errors['incorrect_name']
 
-        if len(params) > 2:
+        if len(params.split(' ')) > 1:
             return self.errors['spaces_not_allowed']
 
-        name = params[1]
-        # TODO(Stoycho)
-        # rooms = db.get('rooms')
-        # if name in rooms:
-        #     return 'The room alredy exists'
+        room = list(self.db.select('rooms', {'name': params}))
+        if room:
+            return 'The room already exists'
 
         return ''  # no errors
 
-    def execute(self, conn, data):
-        return 'To execute create room'
+    def execute(self, conn, name, username: str = ''):
+        self.db.insert('rooms', [[name, username]])
+        return name, f'{self.response_prefix} reated room <{name}>'

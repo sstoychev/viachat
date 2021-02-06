@@ -27,5 +27,5 @@ class Post(BaseCommand):
 
         return ''  # no errors
 
-    def execute(self, conn, data):
+    def execute(self, conn, data, username: str = ''):
         return 'To execute post'

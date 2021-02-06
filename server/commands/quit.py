@@ -24,7 +24,7 @@ class Quit(BaseCommand):
         """
         return ''  # no errors
 
-    def execute(self, conn, message: str):
+    def execute(self, conn, message: str, username: str = ''):
         # TODO(Stoycho) - notify all in the room(s)
         self.db.delete('users', {'addr': str(conn.getpeername())})
         self.db.delete('rooms_users', {'username': str(conn.getpeername())})

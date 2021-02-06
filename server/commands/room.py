@@ -18,27 +18,25 @@ class Room(BaseCommand):
     def describe(self):
         return 'Joins a room'
 
-    def check(self, data: str):
+    def check(self, params: str):
         """
         check if we have second parameter and only second
         check if the room name is available
         """
 
-        params = data.split(' ')
-        if len(params) == 1:
+        if not params:
             return self.errors['incorrect_name']
 
-        if len(params) > 2:
+        if len(params.split(' ')) > 1:
             return self.errors['spaces_not_allowed']
 
-        name = params[1]
-
-        # TODO(Stoycho)
-        # rooms = db.get('rooms')
-        # if name not in rooms:
-        #     return 'The room does not exist'
+        room = list(self.db.select('rooms', {'name': params}))
+        if not room:
+            return 'The room does not exist'
 
         return ''  # no errors
 
-    def execute(self, conn, data):
-        return 'To execute room'
+    def execute(self, conn, name, username: str = ''):
+        self.db.insert('rooms_users', [[name, username]])
+        room = list(self.db.select('rooms', {'name': name}))
+        return name, f'{self.response_prefix} Welcome to <{name}> created by {room[0][2]}'

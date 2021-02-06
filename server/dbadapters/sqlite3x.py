@@ -28,15 +28,21 @@ class Sqlite3x(Db):
             CREATE TABLE rooms (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name TEXT NOT NULL,
-                UNIQUE (name)
+                created_by TEXT NOT NULL,
+                UNIQUE (name),
+                FOREIGN KEY (created_by)
+                    REFERENCES users (username)
+                        ON DELETE CASCADE
+                        ON UPDATE NO ACTION
             );
+
             /*
             We don't have select with JOIN that's why we will not use the ids
             */
             CREATE TABLE rooms_users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT,
             room TEXT,
+            username TEXT,
             UNIQUE (username, room),
             FOREIGN KEY (username)
                 REFERENCES users (username)

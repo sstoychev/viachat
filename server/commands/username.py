@@ -8,7 +8,8 @@ class UserName(BaseCommand):
         return {
             'specify_username': 'Please, set you username first',
             'incorrect_name': 'You should supply correct name',
-            'spaces_not_allowed': 'The name cannot contain spacess'
+            'spaces_not_allowed': 'The name cannot contain spacess',
+            'change_not_allowed': 'Change of the username is not allowed'
         }
 
     @property
@@ -37,9 +38,9 @@ class UserName(BaseCommand):
 
         return ''  # no errors
 
-    def execute(self, conn, username: str):
+    def execute(self, conn, username: str, _username: str = ''):
         self.db.insert('users', [[str(conn.getpeername()), username]])
-        return username
+        return username, f'{self.response_prefix} username set to {username}'
 
     def get_username(self, conn):
         user = list(self.db.select('users', {'addr': str(conn.getpeername())}))

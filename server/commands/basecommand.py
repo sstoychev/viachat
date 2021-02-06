@@ -11,6 +11,7 @@ class BaseCommand(ABC):
         super().__init__()
         self.db = db
         self.prefix = prefix
+        self.response_prefix = '<SERVER>'
 
     @classmethod
     def __init_subclass__(cls, *a, **kwargs):
@@ -50,5 +51,5 @@ class BaseCommand(ABC):
         pass
 
     @abstractmethod
-    def execute(self, conn, data):
+    def execute(self, conn, data, username: str = ''):
         pass

@@ -47,6 +47,9 @@ class Server(object):
                 else:
                     self.send(conn, self.cmds[self.USER_CMD].errors['specify_username'])
                     return
+            elif data.startswith(self.COMMAND_PREFIX) and data[1:].startswith((self.USER_CMD, self.QUIT_CMD)):
+                self.send(conn, self.cmds[self.USER_CMD].errors['change_not_allowed'])
+                return
 
             # check if the data starts with /
             # and if so if it is in the available commands
@@ -61,14 +64,14 @@ class Server(object):
                 if error != '':
                     self.send(conn, error)
                 else:
-                    response = cmd.execute(conn, params)
+                    response, msg = cmd.execute(conn, params, username)
                     # if the user is setting name we have to record it with the connection
                     if cmd.action == self.USER_CMD:
                         self.addr_users[response] = conn
                     if cmd.action == self.QUIT_CMD and username:
                         del self.addr_users[username]
-                    if response:
-                        self.send(conn, response)
+                    if msg:
+                        self.send(conn, msg)
         else:
             print('closing', conn)
             self.sel.unregister(conn)
