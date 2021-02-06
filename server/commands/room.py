@@ -1,4 +1,4 @@
-from .base_command import BaseCommand
+from .basecommand import BaseCommand
 
 
 class Room(BaseCommand):

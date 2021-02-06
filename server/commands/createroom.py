@@ -1,15 +1,15 @@
-from .base_command import BaseCommand
+from .basecommand import BaseCommand
 
 
-class UserName(BaseCommand):
+class CreateRoom(BaseCommand):
 
     @property
     def action(self):
-        return 'username'
+        return 'createoom'
 
     @property
     def describe(self):
-        return 'sets username'
+        return 'Creates a room'
 
     def check(self, data: str):
         """
@@ -26,11 +26,11 @@ class UserName(BaseCommand):
 
         name = params[1]
         # TODO(Stoycho)
-        # users = db.get('users')
+        # rooms = db.get('rooms')
         # if name in rooms:
         #     return 'The room alredy exists'
 
         return ''  # no errors
 
     def execute():
-        return 'To execute username'
+        return 'To execute create room'

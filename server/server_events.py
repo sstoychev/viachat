@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 import selectors
 import socket
-from db_adapters.sqlite3x import Sqlite3x
+from dbadapters.sqlite3x import Sqlite3x
 # import this explicitly so we can use its .subclasses
-from commands.base_command import BaseCommand
+from commands.basecommand import BaseCommand
 # Maybe import * is not the best way
 # TODO(Stoycho) review import *
 from commands import *
@@ -20,18 +20,17 @@ def accept(sock, mask):
     print('accepted', conn, 'from', addr)
     conn.setblocking(False)
     sel.register(conn, selectors.EVENT_READ, read)
-    addr_users[addr] = {'conn': conn, 'username': ''}
+    addr_users[addr] = ''
     send(conn, f'{motd}\n{available_commands}\n')
 
 
 def read(conn, mask):
     data = recv(conn)  # Should be ready
 
-    if addr_users[conn.getpeername()]['username'] == '' and not data.startswith(USERNAME_CMD):
-        send(conn, available_commands)
-        return
-
     if data:
+        if addr_users[conn.getpeername()] == '' and not data.startswith(USERNAME_CMD):
+            send(conn, available_commands)
+            return
         cmd = get_command(data)
         if cmd is None:
             send(conn, available_commands)
@@ -83,17 +82,17 @@ available_commands = "\n".join(available_commands)
 addr_users = {}
 
 sel = selectors.DefaultSelector()
-sock = socket.socket()
-sock.bind(('localhost', 1234))
-sock.listen()
-sock.setblocking(False)
-sel.register(sock, selectors.EVENT_READ, accept)
+with socket.socket() as sock:
+    sock.bind(('localhost', 1234))
+    sock.listen()
+    sock.setblocking(False)
+    sel.register(sock, selectors.EVENT_READ, accept)
 
-print('Started')
-print(motd, available_commands)
+    print('Started')
+    print(motd, available_commands)
 
-while True:
-    events = sel.select()
-    for key, mask in events:
-        callback = key.data
-        callback(key.fileobj, mask)
+    while True:
+        events = sel.select()
+        for key, mask in events:
+            callback = key.data
+            callback(key.fileobj, mask)

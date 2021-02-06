@@ -1,8 +1,8 @@
-import sqlite3
+import pymysql
 from .db import Db
 
 
-class Sqlite3x(Db):
+class MySQLx(Db):
     """
     Class to connect to sqlite
     For the sake of example we use in-memory table. This can be easily changed
@@ -15,27 +15,34 @@ class Sqlite3x(Db):
 
     def __init__(self) -> None:
         super().__init__()
-        conn = sqlite3.connect("file::memory:")
-        conn.execute("PRAGMA foreign_keys = 1")
+        conn = pymysql.connect(
+            host='localhost',
+            user='via',
+            password='V1a|Chat',
+            database='via',
+            autocommit=True)
         cur = conn.cursor()
-        cur.executescript('''
-            CREATE TABLE users (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                addr TEXT NOT NULL UNIQUE,
-                username TEXT NOT NULL UNIQUE
+        cur.execute('''
+            CREATE TABLE IF NOT EXISTS users (
+                `id` int NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                `addr` varchar(32) NOT NULL,
+                `username` varchar(32) NOT NULL UNIQUE
             );
-
-            CREATE TABLE rooms (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL,
-                UNIQUE (name)
+        ''')
+        cur.execute('''
+            CREATE TABLE IF NOT EXISTS rooms (
+                `id` int NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                `name` varchar(32) NOT NULL,
+                UNIQUE KEY (`name`)
             );
-
-            CREATE TABLE rooms_users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT,
-            room TEXT,
-            UNIQUE (username, room),
+        ''')
+        # We don't have select with JOIN that's why we will not use the ids
+        cur.execute('''
+            CREATE TABLE IF NOT EXISTS rooms_users (
+            id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
+            username varchar(32),
+            room varchar(32),
+            UNIQUE KEY (username, room),
             FOREIGN KEY (username)
                 REFERENCES users (username)
                     ON DELETE CASCADE
@@ -56,13 +63,14 @@ class Sqlite3x(Db):
         """
 
         if conditions:
-            where = ' AND '.join([f'{k} = :{k}' for k in conditions])
+            where = ' AND '.join([f'{k} = %({k})s' for k in conditions])
             # TODO(Stoycho) - fix this
-            for row in self.cur.execute(f'SELECT * FROM {table} WHERE {where}', conditions):
-                yield row
+            self.cur.execute(
+                f'SELECT * FROM {table} WHERE {where}', conditions)
         else:
-            for row in self.cur.execute(f'SELECT * FROM {table}'):
-                yield row
+            self.cur.execute(f'SELECT * FROM {table}')
+
+        return self.cur.fetchall()
 
     def insert(self, table: str, items: list) -> bool:
         """
@@ -74,7 +82,7 @@ class Sqlite3x(Db):
             item.insert(0, None)
         # generate '?, ?' for VALUES (? , ?, ?)
         # in order to avoid SQL injection
-        values = ','.join(['?'] * len(items[0]))
+        values = ','.join(['%s'] * len(items[0]))
         self.cur.executemany(f'INSERT INTO {table} VALUES ({values})', items)
 
     def delete(self, table: str, conditions: dict, orderby: str = '', limit: int = 0) -> bool:
@@ -82,7 +90,7 @@ class Sqlite3x(Db):
         Delete table by certain condtitions
         Orderby and limit should both be specified. If either is not specified both are ignored
         """
-        where = ' AND '.join([f'{k} = :{k}' for k in conditions])
+        where = ' AND '.join([f'{k} = %({k})s' for k in conditions])
 
         order_limit = ''
         if orderby and limit:
