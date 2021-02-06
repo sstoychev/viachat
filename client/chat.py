@@ -6,7 +6,7 @@ import sys
 import os
 
 
-def handle_event(server, read_sockets):
+def handle_event(server: socket.socket, read_sockets):
     for socks in read_sockets:
         if socks == server:
             message = str(socks.recv(2048), "utf-8")
@@ -15,8 +15,10 @@ def handle_event(server, read_sockets):
                 return False
             print(message)
         else:
-            message = sys.stdin.readline()
+            message = sys.stdin.readline().rstrip()
             server.send(bytes(message, "utf-8"))
+            if message.split(' ')[0] == '/quit':
+                return False
     return True
 
 

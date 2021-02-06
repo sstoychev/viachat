@@ -40,5 +40,5 @@ class Room(BaseCommand):
 
         return ''  # no errors
 
-    def execute():
+    def execute(self, conn, data):
         return 'To execute room'

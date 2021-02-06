@@ -19,26 +19,30 @@ class UserName(BaseCommand):
     def describe(self):
         return 'sets username'
 
-    def check(self, data: str):
+    def check(self, params: str):
         """
         check if we have second parameter and only second
         check if the room name is available
         """
 
-        params = data.split(' ')
-        if len(params) == 1:
+        if not params:
             return self.errors['incorrect_name']
 
-        if len(params) > 2:
+        if len(params.split(' ')) > 1:
             return self.errors['spaces_not_allowed']
 
-        name = params[1]
-        # TODO(Stoycho)
-        # users = db.get('users')
-        # if name in rooms:
-        #     return 'The room alredy exists'
+        user = list(self.db.select('users', {'username': params}))
+        if user:
+            return 'The username is taken'
 
         return ''  # no errors
 
-    def execute():
-        return 'To execute username'
+    def execute(self, conn, username: str):
+        self.db.insert('users', [[str(conn.getpeername()), username]])
+        return username
+
+    def get_username(self, conn):
+        user = list(self.db.select('users', {'addr': str(conn.getpeername())}))
+        if not user:
+            return ''
+        return user[0][2]

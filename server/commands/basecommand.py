@@ -7,6 +7,11 @@ class BaseCommand(ABC):
 
     subclasses = []
 
+    def __init__(self, db, prefix) -> None:
+        super().__init__()
+        self.db = db
+        self.prefix = prefix
+
     @classmethod
     def __init_subclass__(cls, *a, **kwargs):
         super().__init_subclass__(*a, **kwargs)
@@ -45,5 +50,5 @@ class BaseCommand(ABC):
         pass
 
     @abstractmethod
-    def execute(self, client):
+    def execute(self, conn, data):
         pass

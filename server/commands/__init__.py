@@ -1,1 +1,1 @@
-__all__ = ['basecommand', 'createroom', 'post', 'room', 'username']
+__all__ = ['basecommand', 'createroom', 'post', 'room', 'username', 'quit']
