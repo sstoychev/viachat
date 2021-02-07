@@ -43,8 +43,7 @@ class Server(object):
             # /username and /quit are allowed without username set
             if not username and\
                     not (data.startswith(self.COMMAND_PREFIX) and data[1:].startswith((self.USER_CMD, self.QUIT_CMD))):
-                self.send(
-                    conn, self.cmds[self.USER_CMD].errors['specify_username'])
+                self.send(conn, self.cmds[self.USER_CMD].errors['specify_username'])
                 return
 
             # check if the data starts with /
@@ -96,8 +95,7 @@ class Server(object):
             sock.listen()
             sock.setblocking(False)
             self.sel.register(sock, selectors.EVENT_READ, self.accept)
-            self.sel.register(
-                sys.stdin, selectors.EVENT_READ, self.handle_stdin)
+            self.sel.register(sys.stdin, selectors.EVENT_READ, self.handle_stdin)
 
             print('Started')
             print(self.ADDRESS, self.PORT)

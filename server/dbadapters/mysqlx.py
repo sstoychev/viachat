@@ -69,8 +69,7 @@ class MySQLx(Db):
         if conditions:
             where = ' AND '.join([f'{k} = %({k})s' for k in conditions])
             # TODO(Stoycho) - fix this
-            self.cur.execute(
-                f'SELECT * FROM {table} WHERE {where}', conditions)
+            self.cur.execute(f'SELECT * FROM {table} WHERE {where}', conditions)
         else:
             self.cur.execute(f'SELECT * FROM {table}')
 
@@ -100,5 +99,4 @@ class MySQLx(Db):
         if orderby and limit:
             order_limit = f' ORDER BY {orderby} LIMIT {limit}'
 
-        self.cur.execute(
-            f'DELETE FROM {table} WHERE {where} {order_limit}', conditions)
+        self.cur.execute(f'DELETE FROM {table} WHERE {where} {order_limit}', conditions)

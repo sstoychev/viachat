@@ -18,8 +18,7 @@ config.read(CONFIG_FILE)
 
 # import db_engine dynamically to be controlled only from the config
 db_engine = config.get('server', 'db_engine')
-DbEngine = getattr(importlib.import_module(
-    f'server.dbadapters.{db_engine.lower()}'), db_engine)
+DbEngine = getattr(importlib.import_module(f'server.dbadapters.{db_engine.lower()}'), db_engine)
 
 db = DbEngine(config)
 

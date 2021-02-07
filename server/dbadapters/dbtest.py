@@ -57,8 +57,7 @@ print(list(db.select('rooms_users')))
 # test select with one and multiple conditions
 print('\ntest SELECT .. WHERE')
 print(list(db.select('rooms_users', {'username': 'user1'})))
-print(
-    list(db.select('rooms_users', {'username': 'user1', 'room': 'room2'})))
+print(list(db.select('rooms_users', {'username': 'user1', 'room': 'room2'})))
 
 # test delete with multiple conditions
 print('\ntest DELETE ... WHERE')
