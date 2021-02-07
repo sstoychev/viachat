@@ -17,7 +17,7 @@ class Post(BaseCommand):
     def describe(self):
         return 'Posts message to specific room'
 
-    def check(self, data: str):
+    def check(self, data: str, _username: str) -> str:
         """
         check if we have any message
         """
@@ -27,5 +27,5 @@ class Post(BaseCommand):
 
         return ''  # no errors
 
-    def execute(self, conn, data, username: str = ''):
+    def execute(self, conn, addr_users, data, username: str = ''):
         return 'To execute post'

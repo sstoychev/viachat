@@ -40,15 +40,11 @@ class Server(object):
             # check if we have username for this connection
             username = self.cmds[self.USER_CMD].get_username(conn)
 
-            if not username:
-                # /username and /quit are allowed without username set
-                if data.startswith(self.COMMAND_PREFIX) and data[1:].startswith((self.USER_CMD, self.QUIT_CMD)):
-                    pass
-                else:
-                    self.send(conn, self.cmds[self.USER_CMD].errors['specify_username'])
-                    return
-            elif data.startswith(self.COMMAND_PREFIX) and data[1:].startswith((self.USER_CMD, self.QUIT_CMD)):
-                self.send(conn, self.cmds[self.USER_CMD].errors['change_not_allowed'])
+            # /username and /quit are allowed without username set
+            if not username and\
+                    not (data.startswith(self.COMMAND_PREFIX) and data[1:].startswith((self.USER_CMD, self.QUIT_CMD))):
+                self.send(
+                    conn, self.cmds[self.USER_CMD].errors['specify_username'])
                 return
 
             # check if the data starts with /
@@ -60,18 +56,8 @@ class Server(object):
             else:
                 # validate command's parameters
                 print('found cmd', cmd.action)
-                error = cmd.check(params)
-                if error != '':
-                    self.send(conn, error)
-                else:
-                    response, msg = cmd.execute(conn, params, username)
-                    # if the user is setting name we have to record it with the connection
-                    if cmd.action == self.USER_CMD:
-                        self.addr_users[response] = conn
-                    if cmd.action == self.QUIT_CMD and username:
-                        del self.addr_users[username]
-                    if msg:
-                        self.send(conn, msg)
+                if msg := cmd.execute(conn, self.addr_users, params, username):
+                    self.send(conn, msg)
         else:
             print('closing', conn)
             self.sel.unregister(conn)
@@ -114,9 +100,12 @@ class Server(object):
                 sys.stdin, selectors.EVENT_READ, self.handle_stdin)
 
             print('Started')
-            print(self.MOTD, self.available_commands)
+            print(self.ADDRESS, self.PORT)
+            # TODO(Stoycho) - we should have server commands like the ones for the users
+            print('Commands:')
+            print('quit - stop the server')
 
-            while True:
+            while self.RUN_FOREVER:
                 events = self.sel.select()
                 for key, mask in events:
                     callback = key.data

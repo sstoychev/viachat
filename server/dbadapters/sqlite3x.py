@@ -25,6 +25,10 @@ class Sqlite3x(Db):
                 username TEXT NOT NULL UNIQUE
             );
 
+            /*
+            We don't have select with JOIN that's why we will not use the ids
+            */
+
             CREATE TABLE rooms (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name TEXT NOT NULL,
@@ -36,22 +40,34 @@ class Sqlite3x(Db):
                         ON UPDATE NO ACTION
             );
 
-            /*
-            We don't have select with JOIN that's why we will not use the ids
-            */
             CREATE TABLE rooms_users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            room TEXT,
-            username TEXT,
-            UNIQUE (username, room),
-            FOREIGN KEY (username)
-                REFERENCES users (username)
-                    ON DELETE CASCADE
-                    ON UPDATE NO ACTION,
-            FOREIGN KEY (room)
-                REFERENCES rooms (name)
-                    ON DELETE CASCADE
-                    ON UPDATE NO ACTION
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                room TEXT,
+                username TEXT,
+                UNIQUE (username, room),
+                FOREIGN KEY (username)
+                    REFERENCES users (username)
+                        ON DELETE CASCADE
+                        ON UPDATE NO ACTION,
+                FOREIGN KEY (room)
+                    REFERENCES rooms (name)
+                        ON DELETE CASCADE
+                        ON UPDATE NO ACTION
+            );
+
+            CREATE TABLE rooms_messages (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                room TEXT NOT NULL,
+                username TEXT NOT NULL,
+                messge TEXT NOT NULL,
+                FOREIGN KEY (username)
+                    REFERENCES users (username)
+                        ON DELETE CASCADE
+                        ON UPDATE NO ACTION,
+                FOREIGN KEY (room)
+                    REFERENCES rooms (name)
+                        ON DELETE CASCADE
+                        ON UPDATE NO ACTION
             );
         ''')
         self.conn = conn

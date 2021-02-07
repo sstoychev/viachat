@@ -1,4 +1,5 @@
 from .basecommand import BaseCommand
+from .room import Room
 
 
 class CreateRoom(BaseCommand):
@@ -7,7 +8,8 @@ class CreateRoom(BaseCommand):
     def errors(self):
         return {
             'incorrect_name': 'You should supply correct name',
-            'spaces_not_allowed': 'The name cannot contain spacess'
+            'spaces_not_allowed': 'The name cannot contain spacess',
+            'already_exists': 'The room already exists'
         }
 
     @property
@@ -16,9 +18,9 @@ class CreateRoom(BaseCommand):
 
     @property
     def describe(self):
-        return 'Creates a room'
+        return 'Creates a room and joins it after this'
 
-    def check(self, params: str):
+    def check(self, params: str, _username: str) -> str:
         """
         check if we have second parameter and only second
         check if the room name is available
@@ -31,11 +33,16 @@ class CreateRoom(BaseCommand):
             return self.errors['spaces_not_allowed']
 
         room = list(self.db.select('rooms', {'name': params}))
+
         if room:
-            return 'The room already exists'
+            return self.errors['already_exists']
 
         return ''  # no errors
 
-    def execute(self, conn, name, username: str = ''):
-        self.db.insert('rooms', [[name, username]])
-        return name, f'{self.response_prefix} reated room <{name}>'
+    def execute(self, conn, addr_users, name: str, username: str = ''):
+        msg = self.check(name, username)
+        if not msg:
+            self.db.insert('rooms', [[name, username]])
+            # TODO(Stoycho) join room after creation
+            msg = f'{self.response_prefix} created room <{name}>, </room {name}> to join it'
+        return msg

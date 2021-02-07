@@ -44,7 +44,7 @@ class BaseCommand(ABC):
         pass
 
     @abstractmethod
-    def check(self, data: str) -> str:
+    def check(self, data: str, username: str = '') -> str:
         """
         checks if the data should be executed with this command
         """

@@ -20,11 +20,17 @@ class UserName(BaseCommand):
     def describe(self):
         return 'sets username'
 
-    def check(self, params: str):
+    def check(self, params: str, username: str) -> str:
         """
+        params is actually the new user name
+        username should be empty
+
         check if we have second parameter and only second
         check if the room name is available
         """
+
+        if username:
+            return self.errors['change_not_allowed']
 
         if not params:
             return self.errors['incorrect_name']
@@ -38,9 +44,14 @@ class UserName(BaseCommand):
 
         return ''  # no errors
 
-    def execute(self, conn, username: str, _username: str = ''):
-        self.db.insert('users', [[str(conn.getpeername()), username]])
-        return username, f'{self.response_prefix} username set to {username}'
+    def execute(self, conn, addr_users, data: str, username: str = ''):
+        msg = self.check(data, username)
+        if not msg:
+            self.db.insert('users', [[str(conn.getpeername()), data]])
+            # if the user is setting name we have to record it with the connection
+            addr_users[data] = conn
+            msg = f'{self.response_prefix} username set to {data}'
+        return msg
 
     def get_username(self, conn):
         user = list(self.db.select('users', {'addr': str(conn.getpeername())}))
