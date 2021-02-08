@@ -36,24 +36,24 @@ class Room(BaseCommand):
         if not room:
             return self.errors['room_not_exists']
 
-        rooms_users = list(self.db.select('rooms_users', {'room': params, 'username': username}))
-        if rooms_users:
-            return self.errors['already_in_room']
         return ''  # no errors
 
     def execute(self, conn, srv_obj, name: str, username: str = ''):
         msg = self.check(name, username)
         if not msg:
-            self.db.insert('rooms_users', [[name, username]])
-            # get the room to get it's creator
-            room = list(self.db.select('rooms', {'name': name}))
-            # we need this for he post command - the user will always send
-            # to the last room he joined
             srv_obj.addr_users[username]['current_room'] = name
-            msg = f'{self.server_prefix} Welcome to {self.room_prefix.replace("room", name)} created by {room[0][2]}'
+            rooms_users = list(self.db.select('rooms_users', {'room': name, 'username': username}))
+            # if we are already in just change the room to be the current one
+            if not rooms_users:
+                self.db.insert('rooms_users', [[name, username]])
+                # get the room to get it's creator
+                room = list(self.db.select('rooms', {'name': name}))
+                # we need this for he post command - the user will always send
+                # to the last room he joined
+                msg = f'{self.server_prefix} Welcome to {self.room_prefix.replace("room", name)} created by {room[0][2]}'
 
-            # notify the rest of the room
-            room_msg = f'{self.room_prefix.replace("room", name)} {username} joined'
-            srv_obj.notify(name, room_msg, username)
+                # notify the rest of the room
+                room_msg = f'{self.room_prefix.replace("room", name)} {username} joined'
+                srv_obj.notify(name, room_msg, username)
 
         srv_obj.send(conn, msg)
