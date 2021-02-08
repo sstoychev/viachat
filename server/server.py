@@ -5,10 +5,12 @@ import socket
 
 class Server(object):
 
-    def __init__(self, config: dict, cmds: dict, available_commands: str) -> None:
+    def __init__(self, db, config: dict, cmds: dict, available_commands: str) -> None:
         super().__init__()
 
         self.RUN_FOREVER = True
+
+        self.db = db
 
         self.sel = selectors.DefaultSelector()
         self.available_commands = available_commands
@@ -23,6 +25,7 @@ class Server(object):
         self.POST_CMD = 'post'
         self.QUIT_CMD = 'quit'
         self.USER_CMD = 'username'
+        self.LEAVE_CMD = 'leave'
 
         self.addr_users = {}
 
@@ -55,12 +58,28 @@ class Server(object):
             else:
                 # validate command's parameters
                 print('found cmd', cmd.action)
-                if msg := cmd.execute(conn, self.addr_users, params, username):
-                    self.send(conn, msg)
+                cmd.execute(conn, self, params, username)
         else:
-            print('closing', conn)
-            self.sel.unregister(conn)
-            conn.close()
+            self.disconnect(conn, '', '(disconnect)')
+
+    def disconnect(self, conn, username='', msg=''):
+        if not username:
+            # we come from disconnect
+            username = self.cmds[self.USER_CMD].get_username(conn)
+
+        # if we don't have username, there is no way for the user
+        # to be in registered or in any room
+        if username:
+            # notify all channels the user was in
+            rooms = list(self.db.select('rooms_users', {'username': username}))
+            for room in rooms:
+                self.cmds[self.LEAVE_CMD].notify_room(self, room[1], username, msg)
+            self.db.delete('users', {'username': username})
+            self.db.delete('rooms_users', {'username': username})
+            del self.addr_users[username]
+        print('closing', conn)
+        self.sel.unregister(conn)
+        conn.close()
 
     def recv(self, conn):
         return str(conn.recv(1024), self.ENC).rstrip()
@@ -68,15 +87,28 @@ class Server(object):
     def send(self, conn, data):
         conn.send(bytes(data, self.ENC))
 
+    def notify(self, users, msg: str, username: str):
+        """
+        Notify all the users in the room
+        This will not record message in the database.
+        Should be used for server notifications - e.g. join/leaves
+        """
+        for user in users:
+            if user[2] == username:
+                continue
+            conn = self.addr_users[user[2]]['conn']
+            self.send(conn, msg)
+
     def get_command(self, data: str):
         # check if the first char is COMMAND_PREFIX, otherwise 'post'
-        if not data[0] == self.COMMAND_PREFIX:
-            return self.cmds[self.POST_CMD]
+        cmd_object = self.cmds[self.POST_CMD]
+        params = data
+        if data[0] == self.COMMAND_PREFIX:
+            cmd = data.split(' ')[0][1:]
+            # +2 is for / at the beginning and ' ' after the comman
+            params = data[len(cmd)+2:]
+            cmd_object = self.cmds.get(cmd, None)
 
-        cmd = data.split(' ')[0][1:]
-        # +2 is for / at the beginning and ' ' after the comman
-        params = data[len(cmd)+2:]
-        cmd_object = self.cmds.get(cmd, None)
         return cmd_object, params
 
     def handle_stdin(self, _conn, _data):

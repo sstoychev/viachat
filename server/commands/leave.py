@@ -37,9 +37,17 @@ class Leave(BaseCommand):
 
         return ''  # no errors
 
-    def execute(self, conn, addr_users, name: str, username: str = ''):
+    def execute(self, conn, srv_obj, name: str, username: str = ''):
         msg = self.check(name, username)
         if not msg:
-            self.db.delete('rooms_users', {'room': name, 'username': username})
-            msg = f'{self.response_prefix} Left room <{name}>'
-        return msg
+            msg = f'{self.server_prefix} Left room <{name}>'
+            self.notify_room(srv_obj, name, username)
+
+        srv_obj.send(conn, msg)
+
+    def notify_room(self, srv_obj, name, username, msg: str = ''):
+        self.db.delete('rooms_users', {'room': name, 'username': username})
+        # notify the rest of the room
+        room_msg = f'{self.room_prefix.replace("room", name)} {username} left {msg}'
+        rooms_users = list(self.db.select('rooms_users', {'room': name}))
+        srv_obj.notify(rooms_users, room_msg, username)

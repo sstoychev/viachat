@@ -39,10 +39,11 @@ class CreateRoom(BaseCommand):
 
         return ''  # no errors
 
-    def execute(self, conn, addr_users, name: str, username: str = ''):
+    def execute(self, conn, srv_obj, name: str, username: str = ''):
         msg = self.check(name, username)
         if not msg:
             self.db.insert('rooms', [[name, username]])
             # TODO(Stoycho) join room after creation
-            msg = f'{self.response_prefix} created room <{name}>, </room {name}> to join it'
-        return msg
+            msg = f'{self.server_prefix} created room <{name}>, </room {name}> to join it'
+
+        srv_obj.send(conn, msg)

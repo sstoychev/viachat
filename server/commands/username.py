@@ -44,14 +44,14 @@ class UserName(BaseCommand):
 
         return ''  # no errors
 
-    def execute(self, conn, addr_users, data: str, username: str = ''):
+    def execute(self, conn, srv_obj, data: str, username: str = ''):
         msg = self.check(data, username)
         if not msg:
             self.db.insert('users', [[str(conn.getpeername()), data]])
             # if the user is setting name we have to record it with the connection
-            addr_users[data] = conn
-            msg = f'{self.response_prefix} username set to {data}'
-        return msg
+            srv_obj.addr_users[data] = {'conn': conn}
+            msg = f'{self.server_prefix} username set to {data}'
+        srv_obj.send(conn, msg)
 
     def get_username(self, conn):
         user = list(self.db.select('users', {'addr': str(conn.getpeername())}))

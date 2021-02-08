@@ -37,9 +37,10 @@ class ListUsers(BaseCommand):
 
         return ''  # no errors
 
-    def execute(self, conn, addr_users, name: str, username: str = ''):
+    def execute(self, conn, srv_obj, name: str, username: str = ''):
         msg = self.check(name, username)
         if not msg:
             rooms_users = self.db.select('rooms_users', {'room': name})
             msg = '\n'.join([user[2] for user in rooms_users])
-        return msg
+
+        srv_obj.send(conn, msg)

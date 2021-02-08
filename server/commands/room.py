@@ -41,10 +41,19 @@ class Room(BaseCommand):
             return self.errors['already_in_room']
         return ''  # no errors
 
-    def execute(self, conn, addr_users, name: str, username: str = ''):
+    def execute(self, conn, srv_obj, name: str, username: str = ''):
         msg = self.check(name, username)
         if not msg:
             self.db.insert('rooms_users', [[name, username]])
+            # get the room to get it's creator
             room = list(self.db.select('rooms', {'name': name}))
-            msg = f'{self.response_prefix} Welcome to <{name}> created by {room[0][2]}'
-        return msg
+            # we need this for he post command - the user will always send
+            # to the last room he joined
+            srv_obj.addr_users[username]['current_room'] = name
+            msg = f'{self.server_prefix} Welcome to {self.room_prefix.replace("room", name)} created by {room[0][2]}'
+
+            # notify the rest of the room
+            room_msg = f'{self.room_prefix.replace("room", name)} {username} joined'
+            rooms_users = list(self.db.select('rooms_users', {'room': name}))
+            srv_obj.notify(rooms_users, room_msg, username)
+        srv_obj.send(conn, msg)

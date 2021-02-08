@@ -39,6 +39,7 @@ available_commands.append('')
 available_commands = "\n".join(available_commands)
 
 chat_server = Server(
+    db,
     config=dict(config.items('server')),
     cmds=cmds,
     available_commands=available_commands

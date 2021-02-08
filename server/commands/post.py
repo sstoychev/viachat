@@ -15,7 +15,7 @@ class Post(BaseCommand):
 
     @property
     def describe(self):
-        return 'Posts message to specific room'
+        return 'Posts message to specific room. Last 100 messages are kept and can be retrieved'
 
     def check(self, data: str, _username: str) -> str:
         """
@@ -27,5 +27,5 @@ class Post(BaseCommand):
 
         return ''  # no errors
 
-    def execute(self, conn, addr_users, data, username: str = ''):
+    def execute(self, conn, srv_obj, data, username: str = ''):
         return 'To execute post'
