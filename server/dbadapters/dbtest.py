@@ -1,3 +1,4 @@
+from configparser import ConfigParser
 from sqlite3x import Sqlite3x
 from mysqlx import MySQLx
 """
@@ -10,18 +11,24 @@ seed rooms
 [(1, 'room1', 'user1'), (2, 'room2', 'user2')]
 
 seed rooms_users
-[(1, 'room1', 'user1'), (2, 'room1', 'user2'), (3, 'room2', 'user1'), (4, 'room2', 'user2')]
+[(1, 'room1', 'user1'), (3, 'room2', 'user1'), (2, 'room1', 'user2'), (4, 'room2', 'user2')]
 
 test SELECT .. WHERE
 [(1, 'room1', 'user1'), (3, 'room2', 'user1')]
 [(3, 'room2', 'user1')]
 
+test SELECT COUNT
+[(4,)]
+
+test SELECT .. WHERE
+[(2,)]
+[(1,)]
+
 test DELETE ... WHERE
-[(1, 'room1', 'user1'), (2, 'room1', 'user2'), (3, 'room2', 'user1')]
+[(1, 'room1', 'user1'), (3, 'room2', 'user1'), (2, 'room1', 'user2')]
 
 test DELETE ... WHERE .. ORDER BY x LIMIT y
-[(2, 'room1', 'user2'), (3, 'room2', 'user1')]
-
+[(3, 'room2', 'user1'), (2, 'room1', 'user2')]
 """
 users = [
     ['addr1', 'user1'],
@@ -38,8 +45,14 @@ rooms_users = [
     ['room2', 'user2'],
 ]
 
-db = Sqlite3x()
-# db = MySQLx()
+CONFIG_FILE = '../../config.ini'
+
+config = ConfigParser()
+config.read(CONFIG_FILE)
+
+
+db = Sqlite3x(config)
+# db = MySQLx(config)
 
 # seed the database and test 'insert' and 'select *'
 print('\nseed users')
@@ -58,6 +71,15 @@ print(list(db.select('rooms_users')))
 print('\ntest SELECT .. WHERE')
 print(list(db.select('rooms_users', {'username': 'user1'})))
 print(list(db.select('rooms_users', {'username': 'user1', 'room': 'room2'})))
+
+# test select COUNT
+print('\ntest SELECT COUNT')
+print(list(db.select('rooms_users', {}, True)))
+
+# test select COUNT with one and multiple conditions
+print('\ntest SELECT .. WHERE')
+print(list(db.select('rooms_users', {'username': 'user1'}, True)))
+print(list(db.select('rooms_users', {'username': 'user1', 'room': 'room2'}, True)))
 
 # test delete with multiple conditions
 print('\ntest DELETE ... WHERE')

@@ -73,19 +73,21 @@ class Sqlite3x(Db):
         self.conn = conn
         self.cur = cur
 
-    def select(self, table: str, conditions: dict = {}):
+    def select(self, table: str, conditions: dict = {}, count=False):
         """
         Get data from the table
         Only '=' as operator is supported
         """
-
+        sel = '*'
+        if count:
+            sel = 'COUNT(id)'
         if conditions:
             where = ' AND '.join([f'{k} = :{k}' for k in conditions])
             # TODO(Stoycho) - fix this
-            for row in self.cur.execute(f'SELECT * FROM {table} WHERE {where}', conditions):
+            for row in self.cur.execute(f'SELECT {sel} FROM {table} WHERE {where}', conditions):
                 yield row
         else:
-            for row in self.cur.execute(f'SELECT * FROM {table}'):
+            for row in self.cur.execute(f'SELECT {sel} FROM {table}'):
                 yield row
 
     def insert(self, table: str, items: list) -> bool:

@@ -15,10 +15,10 @@ class MySQLx(Db):
 
     def connect(self):
         conn = pymysql.connect(
-            host=self.config.get('mysq', 'host'),
-            user=self.config.get('mysq', 'user'),
-            password=self.config.get('mysq', 'password'),
-            database=self.config.get('mysq', 'database'),
+            host=self.config.get('mysql', 'host'),
+            user=self.config.get('mysql', 'user'),
+            password=self.config.get('mysql', 'password'),
+            database=self.config.get('mysql', 'database'),
             autocommit=True)
         cur = conn.cursor()
         cur.execute('''
@@ -35,9 +35,9 @@ class MySQLx(Db):
                 `created_by` varchar(32) NOT NULL,
                 UNIQUE KEY (`name`),
                 FOREIGN KEY (created_by)
-                REFERENCES users (username)
-                    ON DELETE CASCADE
-                    ON UPDATE NO ACTION,
+                    REFERENCES users (username)
+                        ON DELETE CASCADE
+                        ON UPDATE NO ACTION
             );
         ''')
         # We don't have select with JOIN that's why we will not use the ids
@@ -60,18 +60,20 @@ class MySQLx(Db):
         self.conn = conn
         self.cur = cur
 
-    def select(self, table: str, conditions: dict = {}):
+    def select(self, table: str, conditions: dict = {}, count=False):
         """
         Get data from the table
         Only '=' as operator is supported
         """
-
+        sel = '*'
+        if count:
+            sel = 'COUNT(id)'
         if conditions:
             where = ' AND '.join([f'{k} = %({k})s' for k in conditions])
             # TODO(Stoycho) - fix this
-            self.cur.execute(f'SELECT * FROM {table} WHERE {where}', conditions)
+            self.cur.execute(f'SELECT {sel} FROM {table} WHERE {where}', conditions)
         else:
-            self.cur.execute(f'SELECT * FROM {table}')
+            self.cur.execute(f'SELECT {sel} FROM {table}')
 
         return self.cur.fetchall()
 

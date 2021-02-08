@@ -22,9 +22,8 @@ class Db(ABC):
         """
         pass
 
-
     @abstractmethod
-    def select(self, table: str, conditions: dict) -> list:
+    def select(self, table: str, conditions: dict, count: bool) -> list:
         """
         Get data from the table
         """
