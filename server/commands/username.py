@@ -49,7 +49,7 @@ class UserName(BaseCommand):
         if not msg:
             self.db.insert('users', [[str(conn.getpeername()), data]])
             # if the user is setting name we have to record it with the connection
-            srv_obj.addr_users[data] = {'conn': conn}
+            srv_obj.addr_users[data] = {'conn': conn, 'current_room': ''}
             msg = f'{self.server_prefix} username set to {data}'
         srv_obj.send(conn, msg)
 

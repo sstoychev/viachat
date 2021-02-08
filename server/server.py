@@ -55,6 +55,8 @@ class Server(object):
 
             if cmd is None:
                 self.send(conn, self.available_commands)
+            elif cmd == self.cmds[self.POST_CMD] and self.addr_users[username]['current_room'] == '':
+                self.send(conn, self.cmds[self.POST_CMD].errors['select_room'])
             else:
                 # validate command's parameters
                 print('found cmd', cmd.action)
@@ -87,12 +89,13 @@ class Server(object):
     def send(self, conn, data):
         conn.send(bytes(data, self.ENC))
 
-    def notify(self, users, msg: str, username: str):
+    def notify(self, room, msg: str, username: str):
         """
         Notify all the users in the room
         This will not record message in the database.
         Should be used for server notifications - e.g. join/leaves
         """
+        users = self.db.select('rooms_users', {'room': room})
         for user in users:
             if user[2] == username:
                 continue

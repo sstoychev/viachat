@@ -47,7 +47,8 @@ class Leave(BaseCommand):
 
     def notify_room(self, srv_obj, name, username, msg: str = ''):
         self.db.delete('rooms_users', {'room': name, 'username': username})
+        if name == srv_obj.addr_users[username]['current_room']:
+            srv_obj.addr_users[username]['current_room'] = ''
         # notify the rest of the room
         room_msg = f'{self.room_prefix.replace("room", name)} {username} left {msg}'
-        rooms_users = list(self.db.select('rooms_users', {'room': name}))
-        srv_obj.notify(rooms_users, room_msg, username)
+        srv_obj.notify(name, room_msg, username)

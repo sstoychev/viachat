@@ -54,6 +54,6 @@ class Room(BaseCommand):
 
             # notify the rest of the room
             room_msg = f'{self.room_prefix.replace("room", name)} {username} joined'
-            rooms_users = list(self.db.select('rooms_users', {'room': name}))
-            srv_obj.notify(rooms_users, room_msg, username)
+            srv_obj.notify(name, room_msg, username)
+
         srv_obj.send(conn, msg)
